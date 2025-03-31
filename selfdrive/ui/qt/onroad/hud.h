@@ -29,4 +29,7 @@ protected:
   bool is_metric = false;
   bool v_ego_cluster_seen = false;
   int status = STATUS_DISENGAGED;
+
+  bool isBrakePressed = false; // New variable
+  bool isGasPressed = false;   // New variable
 };

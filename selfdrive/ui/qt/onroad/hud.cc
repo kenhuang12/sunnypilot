@@ -36,6 +36,10 @@ void HudRenderer::updateState(const UIState &s) {
   v_ego_cluster_seen = v_ego_cluster_seen || car_state.getVEgoCluster() != 0.0;
   float v_ego = v_ego_cluster_seen ? car_state.getVEgoCluster() : car_state.getVEgo();
   speed = std::max<float>(0.0f, v_ego * (is_metric ? MS_TO_KPH : MS_TO_MPH));
+
+  // Update brake and gas pressed states
+  isBrakePressed = car_state.getBrakePressed();
+  isGasPressed = car_state.getGasPressed();
 }
 
 void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
@@ -96,7 +100,18 @@ void HudRenderer::drawSetSpeed(QPainter &p, const QRect &surface_rect) {
 void HudRenderer::drawCurrentSpeed(QPainter &p, const QRect &surface_rect) {
   QString speedStr = QString::number(std::nearbyint(speed));
 
+  // Determine color based on brake or gas pressed if the toggle is enabled
+  QColor speed_color = QColor(255, 255, 255); // Default white
+  if (params.getBool("SpeedColorChange")) { // Check toggle state
+    if (isBrakePressed) {
+      speed_color = QColor(255, 0, 0); // Red for brake
+    } else if (isGasPressed) {
+      speed_color = QColor(0, 255, 0); // Green for gas
+    }
+  }
+
   p.setFont(InterFont(176, QFont::Bold));
+  p.setPen(speed_color);
   drawText(p, surface_rect.center().x(), 210, speedStr);
 
   p.setFont(InterFont(66));
